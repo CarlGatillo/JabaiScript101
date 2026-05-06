@@ -1,0 +1,200 @@
+package Gatillo;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.*;
+import java.io.*;
+import java.awt.event.*;
+
+
+public class ReservationSystem extends JFrame {
+	
+	 static JTextField guestName, roomType, checkIn, checkOut;
+	 static DefaultTableModel model;
+	 
+	 ReservationSystem(){
+		 
+		JLabel gName = new JLabel("Guest Name: ");
+		add(gName).setBounds(30, 280, 100, 100);
+		guestName = new JTextField();
+		add(guestName).setBounds(30, 340, 160, 20);
+		
+		JLabel rType = new JLabel("Room Type: ");
+		add(rType).setBounds(220, 280, 100, 100);
+		roomType = new JTextField();
+		add(roomType).setBounds(220, 340, 160, 20);
+		
+		JLabel cIn = new JLabel("Check In Date: ");
+		add(cIn).setBounds(410, 280, 100, 100);
+		checkIn = new JTextField();
+		add(checkIn).setBounds(410, 340, 160, 20);
+		
+		JLabel cOut = new JLabel("Check Out Date: ");
+		add(cOut).setBounds(600, 280, 100, 100);
+		checkOut = new JTextField();
+		add(checkOut).setBounds(600, 340, 160, 20);
+		
+		 JButton addEmp = new JButton("Add");
+		 add(addEmp).setBounds(800, 340, 80, 20);
+		 
+		 JButton updEmp = new JButton("Update");
+		 add(updEmp).setBounds(800, 370, 80, 20);
+		 
+		 JButton delEmp = new JButton("Delete");
+		 add(delEmp).setBounds(800, 400, 80, 20);
+		 
+		 JButton exitB = new JButton("Exit");
+		 add(exitB).setBounds(800, 430, 80, 20);
+		 
+		 String columns[] = {"Guest Name", "Room Type", " Check-In Date", "Check-Out Date" };
+		 model = new DefaultTableModel(columns, 0);
+		 JTable table = new JTable(model);
+		 JScrollPane scPane = new JScrollPane(table);
+		 add(scPane).setBounds(30, 20, 730, 250);
+		 
+		 table.getTableHeader().setBackground(new Color(173, 216, 230)); 
+		 table.getTableHeader().setForeground(Color.BLACK);
+		 
+		 read();
+		 
+		 table.addMouseListener(new MouseAdapter(){
+				public void mouseClicked(MouseEvent ev) {
+				 int row = table.getSelectedRow();
+				 if(row != -1) {
+					 guestName.setText(model.getValueAt(row, 0).toString()); 
+					 roomType.setText(model.getValueAt(row, 1).toString()); 
+					 checkIn.setText(model.getValueAt(row, 2).toString()); 
+					 checkOut.setText(model.getValueAt(row, 3).toString()); 
+				 }
+				}
+			 }); 
+		 
+		 addEmp.addActionListener(e ->{
+			 
+			 try {
+					FileWriter fw = new FileWriter("Records.txt", true);
+					
+				    String gNames = guestName.getText();
+				    String roomT = roomType.getText();
+				    String chIn = checkIn.getText();
+				    String chOut = checkOut.getText();
+					
+				    fw.write(gNames + " - " + roomT + " - " + chIn + " - " + chOut + "\n" );
+				    fw.close();
+				    
+					read();
+					JOptionPane.showMessageDialog(null, "Hotel Reservation Added Successfully!"); 
+					
+			 } catch (IOException e1) {
+				 System.out.println("System Error: " + e1.getMessage());
+			 }
+		 });
+		 
+		 updEmp.addActionListener(e ->{
+			 int selectRow = table.getSelectedRow();
+				
+				if(selectRow == -1) {
+					JOptionPane.showMessageDialog(null, "Select a record to update.");
+					return;
+				}
+				
+				ArrayList<String> lists = new ArrayList<>();
+				try(BufferedReader br = new BufferedReader(new FileReader("Records.txt"))){
+				 String line;  int rowInd = 0;
+				 
+				 while((line = br.readLine()) != null) {
+					if(rowInd == selectRow) {
+						String update = guestName.getText() + " - " +
+					    roomType.getText() + " - " +
+						checkIn.getText() + " - " +
+					    checkOut.getText();
+						lists.add(update);
+					} else {
+						lists.add(line);
+					}
+					rowInd++;
+				 }
+				}catch(IOException z) {
+					System.err.println(z);
+				}
+				
+				try (BufferedWriter bw = new BufferedWriter(new FileWriter("Records.txt"))) {
+					
+					for(String record : lists) bw.write(record + "\n");
+					} catch(IOException z) {
+						System.out.println(z);
+					}
+				
+				read();
+				JOptionPane.showMessageDialog(null, "Updated Successfully!");
+			
+				
+		 });
+		 
+		 delEmp.addActionListener(e ->{
+				int selectRow = table.getSelectedRow();
+				
+				if(selectRow == -1) {
+					JOptionPane.showMessageDialog(null, "Select a record to delete.");
+					return;
+				}
+				
+				int confirm = JOptionPane.showConfirmDialog(null, "Are you sure to delete this record?",
+						"Confirm Delete", JOptionPane.YES_NO_OPTION);
+				if(confirm != JOptionPane.YES_OPTION) return;
+				
+				ArrayList<String> lists = new ArrayList<>();
+				try(BufferedReader br = new BufferedReader(new FileReader("Records.txt"))){
+				 String line;  int rowInd = 0;
+				 
+				 while((line = br.readLine()) != null) {
+					if(rowInd != selectRow) lists.add(line); 
+					rowInd++;
+				 }
+				}catch(IOException z) {
+					System.err.println(z);
+				}
+				
+				try (BufferedWriter bw = new BufferedWriter(new FileWriter("Records.txt"))) {
+					
+					for(String record : lists) bw.write(record + "\n");
+					} catch(IOException z) {
+						System.out.println(z);
+					}
+				
+				read();
+				JOptionPane.showMessageDialog(null, "Deleted Successfully!");
+			
+			 });
+		 
+		 exitB.addActionListener(e ->{
+		 System.exit(0);
+		 });
+			  
+		setTitle("Hotel Room Reservation");
+		setLayout(null);
+		setSize(950, 520);
+		setVisible(true);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+	 }
+	 
+	 public static void read() {
+			model.setRowCount(0);
+			
+			try (BufferedReader br = new BufferedReader(new FileReader("Records.txt"))) {
+			String line;
+			
+			while((line = br.readLine()) != null) {
+				String row[] = line.split(" - ");
+				model.addRow(row);
+			}
+			} catch(IOException e) {
+				System.out.println("System Error: " + e.getMessage());
+			}
+		}
+	 
+	public static void main(String[] args) {
+	new  ReservationSystem();
+	}
+
+}

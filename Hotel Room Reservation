@@ -1,0 +1,159 @@
+package gatillo;
+import java.util.Scanner;
+
+public class HotelReservationSystem {
+
+	public static void main(String[] args) {
+		Scanner scanner = new Scanner(System.in);
+		
+		//1.) Guest Details
+		
+	       System.out.println("    =====  WELCOME TO HOTEL  =====         ");
+		
+        System.out.print("Enter your name: ");
+        String name = scanner.nextLine();
+        
+        System.out.print("Enter your age: ");
+        int age = scanner.nextInt();
+        scanner.nextLine(); 
+        
+        System.out.print("Enter your gender (Male/Female): ");
+        String gender = scanner.nextLine();
+        
+     //2.) Room Selection
+        System.out.println("\n    ===== ROOM SELECTION MENU =====         ");
+        System.out.println("1. Small Room - ₱500/night");
+        System.out.println("2. Medium Room - ₱700/night");
+        System.out.println("3. Large Room - ₱1,000/night");
+        System.out.print("Select room type (1-3): ");
+        int roomChoice = scanner.nextInt();
+        
+        System.out.print("Number of nights: ");
+        int nights = scanner.nextInt();
+        
+        String roomType;
+        double roomPrice;
+        switch(roomChoice) {
+            case 1:
+                roomType = "Small Room";
+                roomPrice = 500.00;
+                break;
+            case 2:
+                roomType = "Medium Room";
+                roomPrice = 700.00;
+                break;
+            case 3:
+                roomType = "Large Room";
+                roomPrice = 1000.00;
+                break;
+            default:
+                roomType = "Small Room";
+                roomPrice = 500.00;
+        }
+        
+        //3.) Food and Drinks Menu 
+        
+        System.out.println();
+        System.out.println("    ===== 🍽️  FEAST RESTAURANT MENU  🍽️ =====         ");
+        System.out.println("1. Coke - ₱50.00");
+        System.out.println("2. Rice - ₱5.00");
+        System.out.println("3. Chicken Adobo - ₱100.00");
+        System.out.println("4. Beef Steak - ₱175.00");
+        System.out.println("5. Halo-Halo - ₱250.00");
+        System.out.print("\nDo you want to order food/drinks? (Y/N): ");
+        char orderChoice = scanner.next().charAt(0);
+        
+        double foodTotal = 0.00;
+        if (orderChoice == 'Y' || orderChoice == 'y') {
+
+            System.out.println("      ===== 🛒 YOUR ORDER CART 🛒 =====           ");
+            System.out.println(" Type the item number (1-5) to add to your order.");
+            System.out.println("  Press [0] when you're finished adding items.");
+            
+            while (true) {
+                System.out.print("\n Select an item [1-5] or [0] to complete: ");
+                int itemChoice = scanner.nextInt();
+                
+                if (itemChoice == 0) {
+                    System.out.println("\n   ✅ All items added successfully!");
+                    System.out.println("   📦 Your order has been confirmed.");
+                    break;
+                }
+                
+                if (itemChoice < 1 || itemChoice > 5) {
+                    System.out.println("   ❌ Oops! Invalid choice. Please select 1-5 or 0.");
+                    continue;
+                }
+                
+                System.out.print("   📝 How many portions? ");
+                int quantity = scanner.nextInt();
+                
+                double itemPrice = 0.00;
+                String itemName = "";
+                String itemEmoji = "";
+                switch(itemChoice) {
+                    case 1: 
+                        itemPrice = 50.00;
+                        itemName = "Coke";
+                        itemEmoji = "🥤";
+                        break;
+                    case 2: 
+                        itemPrice = 5.00;
+                        itemName = "Rice";
+                        itemEmoji = "🍚";
+                        break;
+                    case 3: 
+                        itemPrice = 100.00;
+                        itemName = "Chicken Adobo";
+                        itemEmoji = "🍖";
+                        break;
+                    case 4: 
+                        itemPrice = 175.00;
+                        itemName = "Beef Steak";
+                        itemEmoji = "🥩";
+                        break;
+                    case 5: 
+                        itemPrice = 250.00;
+                        itemName = "Halo-Halo";
+                        itemEmoji = "🍧";
+                        break;
+                }
+                
+                double itemTotal = itemPrice * quantity;
+                foodTotal += itemTotal;
+                System.out.printf("   %s Great! Added %s x %d = ₱%.2f\n", itemEmoji, itemName, quantity, itemTotal);
+            }
+        }
+        
+        // Calculate total bill
+        double roomCost = roomPrice * nights;
+        double totalBill = roomCost + foodTotal;
+        
+        //4.) Display Bill Summary
+        System.out.println("\n--- Bill Summary ---");
+        System.out.println("Name: " + name);
+        System.out.println("Room Type: " + roomType);
+        System.out.println("Number of Nights: " + nights);
+        System.out.printf("Food and Drinks: ₱%.2f\n", foodTotal);
+        System.out.printf("Room Cost: ₱%.2f\n", roomCost);
+        System.out.printf("Total Bill: ₱%.2f\n", totalBill);
+        
+        // Payment
+        System.out.print("\nEnter cash payment: ₱");
+        double cashPayment = scanner.nextDouble();
+        
+        double change = cashPayment - totalBill;
+        System.out.printf("Payment: ₱%.2f\n", cashPayment);
+        
+        if (change >= 0) {
+            System.out.printf("Change: ₱%.2f\n", change);
+        } else {
+            System.out.printf("Additional Payment Required: ₱%.2f\n", Math.abs(change));
+        }
+        
+        // Thank You Message
+        System.out.println("\nThank you for staying with us! We hope to see you again!");
+        
+        scanner.close();
+    }
+}

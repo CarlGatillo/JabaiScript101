@@ -1,0 +1,379 @@
+package Package101;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.ArrayList;
+
+public class AccountManagementSystem extends JFrame{
+	
+	JTextField username, fullname;
+	JPasswordField password;
+	DefaultTableModel tableModel;
+	CardLayout cardLayout;
+	JPanel logInPanel, registerPanel, mainPanel;
+	
+	AccountManagementSystem() {
+		cardLayout = new CardLayout();
+		setLayout(cardLayout);
+		
+		createLogInPage();
+		createRegisterPage();
+		createMainPage();
+		
+		add(logInPanel, "Login");
+		add(registerPanel, "Register");
+		add(mainPanel, "Main");
+		cardLayout.show(getContentPane(), "Login");
+		    
+	    setTitle("Account Management System");
+	    setSize(950, 600);
+	    setVisible(true);
+	    setDefaultCloseOperation(EXIT_ON_CLOSE);
+	    setLocationRelativeTo(null);
+		
+	}
+	
+	public void createLogInPage() {
+		logInPanel = new JPanel();
+		logInPanel.setLayout(null);
+		
+        JLabel title = new JLabel("LOGIN SYSTEM", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 32));
+        title.setBounds(300, 60, 350, 50);
+        logInPanel.add(title);
+
+        JLabel unameLabel = new JLabel("Username");
+        unameLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        unameLabel.setBounds(300, 170, 120, 30);
+        logInPanel.add(unameLabel);
+
+        JTextField logInUsername = new JTextField();
+        logInUsername.setFont(new Font("Arial", Font.PLAIN, 16));
+        logInUsername.setBounds(300, 205, 350, 40);
+        logInPanel.add(logInUsername);
+
+        JLabel passLabel = new JLabel("Password");
+        passLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        passLabel.setBounds(300, 265, 120, 30);
+        logInPanel.add(passLabel);
+
+        JPasswordField logInPass = new JPasswordField();
+        logInPass.setFont(new Font("Arial", Font.PLAIN, 16));
+        logInPass.setBounds(300, 300, 350, 40);
+        logInPanel.add(logInPass);
+
+        JButton logInBtn = new JButton("LOGIN");
+        logInBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        logInBtn.setBounds(300, 380, 160, 45);
+        logInPanel.add(logInBtn);
+
+        JButton registerBtn = new JButton("REGISTER");
+        registerBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        registerBtn.setBounds(490, 380, 160, 45);
+        logInPanel.add(registerBtn);
+
+        JButton exitBtn = new JButton("EXIT");
+        exitBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        exitBtn.setBounds(395, 445, 160, 45);
+        logInPanel.add(exitBtn);
+        
+        logInBtn.addActionListener(e -> {
+            String uname = logInUsername.getText().trim();
+            String pass = new String(logInPass.getPassword()).trim();
+
+            if (uname.isEmpty() || pass.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Enter username and password!");
+                return;
+            }
+
+            ArrayList<String[]> accountList = loadUsers();
+            for (String[] account : accountList) {
+                if (account[0].equals(uname) && account[1].equals(pass)) {
+                    JOptionPane.showMessageDialog(null, "Login Successful!");
+                    read();
+                    cardLayout.show(getContentPane(), "Main");
+                    return;
+                }
+            }
+            JOptionPane.showMessageDialog(null, "Invalid credentials!");
+        });
+
+        registerBtn.addActionListener(e -> cardLayout.show(getContentPane(), "Register"));
+        exitBtn.addActionListener(e -> System.exit(0));
+	}
+	
+	public void createRegisterPage() {
+		registerPanel = new JPanel();
+		registerPanel.setLayout(null);
+		
+		JLabel title = new JLabel("REGISTER", SwingConstants.CENTER);
+		title.setFont(new Font("Arial", Font.BOLD, 32));
+		title.setBounds(300, 50, 350, 50);
+		registerPanel.add(title);
+		
+		JLabel unameLabel = new JLabel("Username:");
+		unameLabel.setBounds(300, 140, 120, 30);
+		registerPanel.add(unameLabel);
+		JTextField regUsername = new JTextField();
+		regUsername.setBounds(300, 175, 350, 40);
+		registerPanel.add(regUsername);
+		
+		JLabel passLabel = new JLabel("Password:");
+		passLabel.setBounds(300, 235, 120, 30);
+		registerPanel.add(passLabel);
+		JPasswordField regPassword = new JPasswordField();
+		regPassword.setBounds(300, 270, 350, 40);
+		registerPanel.add(regPassword);
+		
+		JLabel nameLabel = new JLabel("Full Name:");
+		nameLabel.setBounds(300, 330, 120, 30);
+		registerPanel.add(nameLabel);
+		JTextField regFullname = new JTextField();
+		regFullname.setBounds(300, 365, 350, 40);
+		registerPanel.add(regFullname);
+		
+		JButton registerBtn = new JButton("REGISTER");
+		registerBtn.setBounds(300, 445, 160, 45);
+		registerPanel.add(registerBtn);
+		
+		JButton clearBtn = new JButton("CLEAR");
+		clearBtn.setBounds(490, 445, 160, 45);
+		registerPanel.add(clearBtn);
+		
+		JButton backBtn = new JButton("BACK");
+		backBtn.setBounds(395, 505, 160, 45);
+		registerPanel.add(backBtn);
+		
+		registerBtn.addActionListener(e -> {
+			String uname = regUsername.getText().trim();
+			String pass = new String(regPassword.getPassword()).trim();
+			String name = regFullname.getText().trim();
+			
+			if (uname.isEmpty() || pass.isEmpty() || name.isEmpty()) {
+				JOptionPane.showMessageDialog(null, "All fields required!");
+				return;
+			}
+			
+			ArrayList<String[]> users = loadUsers();
+			for (String[] user : users) {
+				if (user[0].equals(uname)) {
+					JOptionPane.showMessageDialog(null, "Username already exists!");
+					return;
+				}
+			}
+			
+			try (PrintWriter pw = new PrintWriter(new FileWriter("users.txt", true))) {
+				pw.println(uname + "," + pass + "," + name);
+				JOptionPane.showMessageDialog(null, "Registration Successful!");
+				regUsername.setText(""); regPassword.setText(""); regFullname.setText("");
+				cardLayout.show(getContentPane(), "Login");
+			} catch (IOException ex) {
+				JOptionPane.showMessageDialog(null, "Registration failed!");
+			}
+		});
+		
+		clearBtn.addActionListener(e -> {
+			regUsername.setText(""); regPassword.setText(""); regFullname.setText("");
+		});
+		
+		backBtn.addActionListener(e -> cardLayout.show(getContentPane(), "Login"));
+	}
+	
+	public void createMainPage() {
+		mainPanel = new JPanel();
+		mainPanel.setLayout(null);
+		
+		JLabel title = new JLabel("ACCOUNT MANAGEMENT", SwingConstants.CENTER);
+		title.setFont(new Font("Arial", Font.BOLD, 28));
+		title.setBounds(250, 20, 450, 40);
+		mainPanel.add(title);
+		
+		JLabel unameLabel = new JLabel("Username:");
+		unameLabel.setBounds(30, 300, 100, 30);
+		mainPanel.add(unameLabel);
+		username = new JTextField();
+		username.setBounds(130, 300, 150, 35);
+		mainPanel.add(username);
+		
+		JLabel passLabel = new JLabel("Password:");
+		passLabel.setBounds(300, 300, 100, 30);
+		mainPanel.add(passLabel);
+		password = new JPasswordField();
+		password.setBounds(400, 300, 150, 35);
+		mainPanel.add(password);
+		
+		JLabel nameLabel = new JLabel("Full Name:");
+		nameLabel.setBounds(570, 300, 100, 30);
+		mainPanel.add(nameLabel);
+		fullname = new JTextField();
+		fullname.setBounds(670, 300, 150, 35);
+		mainPanel.add(fullname);
+		
+		JButton addBtn = new JButton("ADD");
+		addBtn.setBounds(850, 300, 80, 35);
+		mainPanel.add(addBtn);
+		
+		JButton loadBtn = new JButton("LOAD");
+		loadBtn.setBounds(850, 340, 80, 35);
+		mainPanel.add(loadBtn);
+		
+		JButton updateBtn = new JButton("UPDATE");
+		updateBtn.setBounds(850, 380, 80, 35);
+		mainPanel.add(updateBtn);
+		
+		JButton deleteBtn = new JButton("DELETE");
+		deleteBtn.setBounds(850, 420, 80, 35);
+		mainPanel.add(deleteBtn);
+		
+		JButton logoutBtn = new JButton("LOGOUT");
+		logoutBtn.setBounds(850, 460, 80, 35);
+		mainPanel.add(logoutBtn);
+		
+		String[] columns = {"Username", "Password", "Full Name"};
+		tableModel = new DefaultTableModel(columns, 0); 
+		JTable table = new JTable(tableModel);
+		table.setFont(new Font("Arial", Font.PLAIN, 14));
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setBounds(40, 80, 860, 220);
+		mainPanel.add(scrollPane);
+		
+		table.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int row = table.getSelectedRow();
+				if (row >= 0) {
+					username.setText(tableModel.getValueAt(row, 0).toString());
+					password.setText(tableModel.getValueAt(row, 1).toString());
+					fullname.setText(tableModel.getValueAt(row, 2).toString());
+				}
+			}
+		});
+		
+		addBtn.addActionListener(e -> addAccount());
+		loadBtn.addActionListener(e -> read());
+		updateBtn.addActionListener(e -> updateAccount());
+		deleteBtn.addActionListener(e -> deleteAccount());
+		logoutBtn.addActionListener(e -> cardLayout.show(getContentPane(), "Login"));
+	}
+	
+	public void addAccount() {
+		String uname = username.getText().trim();
+		String pass = new String(password.getPassword()).trim();
+		String name = fullname.getText().trim();
+		
+		if (uname.isEmpty() || pass.isEmpty() || name.isEmpty()) {
+			JOptionPane.showMessageDialog(null, "All fields required!");
+			return;
+		}
+		
+		ArrayList<String[]> users = loadUsers();
+		for (String[] user : users) {
+			if (user[0].equals(uname)) {
+				JOptionPane.showMessageDialog(null, "Username exists!");
+				return;
+			}
+		}
+		
+		tableModel.addRow(new Object[]{uname, pass, name});
+		saveData();
+		clearFields();
+		JOptionPane.showMessageDialog(null, "Account Added!");
+	}
+	
+	public void updateAccount() {
+		int row = getSelectedRow();
+		if (row == -1) {
+			JOptionPane.showMessageDialog(null, "Select an account!");
+			return;
+		}
+		
+		String uname = username.getText().trim();
+		String pass = new String(password.getPassword()).trim();
+		String name = fullname.getText().trim();
+		
+		if (uname.isEmpty() || pass.isEmpty() || name.isEmpty()) {
+			JOptionPane.showMessageDialog(null, "All fields required!");
+			return;
+		}
+		
+		tableModel.setValueAt(uname, row, 0);
+		tableModel.setValueAt(pass, row, 1);
+		tableModel.setValueAt(name, row, 2);
+		saveData();
+		clearFields();
+		JOptionPane.showMessageDialog(null, "Updated!");
+	}
+	
+	public void deleteAccount() {
+		int row = getSelectedRow();
+		if (row == -1) {
+			JOptionPane.showMessageDialog(null, "Select an account!");
+			return;
+		}
+		
+		int confirm = JOptionPane.showConfirmDialog(null, "Delete this account?");
+		if (confirm == JOptionPane.YES_OPTION) {
+			tableModel.removeRow(row);
+			saveData();
+			clearFields();
+			JOptionPane.showMessageDialog(null, "Deleted!");
+		}
+	}
+	
+	public int getSelectedRow() {
+		JTable table = null;
+		for (Component c : mainPanel.getComponents()) {
+			if (c instanceof JScrollPane) {
+				JScrollPane sp = (JScrollPane)c;
+				if (sp.getViewport().getView() instanceof JTable) {
+					table = (JTable)sp.getViewport().getView();
+					break;
+				}
+			}
+		}
+		return table != null ? table.getSelectedRow() : -1;
+	}
+	
+	public void read() {
+		tableModel.setRowCount(0);
+		ArrayList<String[]> users = loadUsers();
+		for (String[] user : users) {
+			tableModel.addRow(user);
+		}
+	}
+	
+	public ArrayList<String[]> loadUsers() {
+		ArrayList<String[]> users = new ArrayList<>();
+		try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(",");
+				if (parts.length == 3) users.add(parts);
+			}
+		} catch (IOException e) {}
+		return users;
+	}
+	
+	public void saveData() {
+		try (PrintWriter pw = new PrintWriter(new FileWriter("users.txt"))) {
+			for (int i = 0; i < tableModel.getRowCount(); i++) {
+				pw.println(tableModel.getValueAt(i, 0) + "," + 
+						  tableModel.getValueAt(i, 1) + "," + 
+						  tableModel.getValueAt(i, 2));
+			}
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Save error!");
+		}
+	}
+	
+	public void clearFields() {
+		if (username != null) username.setText("");
+		if (password != null) password.setText("");
+		if (fullname != null) fullname.setText("");
+	}
+
+	public static void main(String[] args) {
+		new AccountManagementSystem();
+	}
+}

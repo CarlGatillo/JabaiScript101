@@ -1,0 +1,197 @@
+package ylananSIF;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.io.*;
+import java.util.ArrayList;
+import java.awt.event.*;
+
+public class ylananSIF extends JFrame {
+	DefaultTableModel model;
+	JTable table;
+	JTextField txtName,txtCourse,txtSection;
+
+	ylananSIF(){
+		String [] columns = {"Name","Course","Section"};
+
+		model = new DefaultTableModel(null,columns);
+		table = new JTable(model);
+		JScrollPane sp = new JScrollPane(table);
+		add(sp).setBounds(10,90,410,265);
+
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int selectedRow = table.getSelectedRow();
+				if(selectedRow != -1 ) {
+					txtName.setText(model.getValueAt(selectedRow, 0).toString());
+					txtCourse.setText(model.getValueAt(selectedRow, 1).toString());
+					txtSection.setText(model.getValueAt(selectedRow, 2).toString());
+				}
+			}
+		});
+		load();
+
+		//JLabel
+
+		JLabel name = new JLabel("Name");
+		JLabel course = new JLabel("Course");
+		JLabel section = new JLabel("Section");
+
+		//JLabel setBounds
+		add(name).setBounds(10,10,80,20);
+		add(course).setBounds(150,10,80,20);
+		add(section).setBounds(290,10,80,20);
+
+		//JTextField
+		txtName = new JTextField();
+		add(txtName).setBounds(10,30,130,20);
+
+		txtCourse = new JTextField();
+		add(txtCourse).setBounds(150,30,130,20);
+
+		txtSection = new JTextField();
+		add(txtSection).setBounds(290,30,130,20);
+
+
+		//JButtons
+
+		JButton btnadd = new JButton("Add");
+		JButton btnUpdate = new JButton("Update");
+		JButton btnDelete = new JButton("Delete");
+		JButton btnClear = new JButton("Clear");
+
+		//JButtons setBounds
+		add(btnadd).setBounds(30,60,80,20);
+		add(btnUpdate).setBounds(120,60,80,20);
+		add(btnDelete).setBounds(210,60,80,20);
+		add(btnClear).setBounds(300,60,80,20);
+
+		//ActionListner
+
+		btnadd.addActionListener(e-> add());
+		btnUpdate.addActionListener(e-> update());
+		btnDelete.addActionListener(e-> delete());
+		btnClear.addActionListener(e-> clear());
+
+		setLayout(null);
+		setResizable(false);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setTitle("Student Information Form");
+		setSize(445,405);
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
+	//methods
+	public void add() {
+		String name = txtName.getText(),
+				course = txtCourse.getText(),
+				section = txtSection.getText();
+
+		try(BufferedWriter bw = new BufferedWriter(new FileWriter("Information.txt",true))){
+			bw.write(name + "," + course + "," + section + "\n");
+
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		model.addRow(new String[] {name,course,section});
+		JOptionPane.showMessageDialog(null,"Information Saved");
+
+	}
+	public void update() {
+		int selectedRow = table.getSelectedRow();
+		if(selectedRow == -1) {
+			JOptionPane.showMessageDialog(null,"Please Select A Row To Update");
+			return;
+		}
+		String name = txtName.getText(),
+				course = txtCourse.getText(),
+				section = txtSection.getText();
+		ArrayList<String> lines = new ArrayList<>();
+		try(BufferedReader br = new BufferedReader(new FileReader("Information.txt"))){
+			String line = "";
+			int rowIndex = 0;
+			while((line = br.readLine())!= null) {
+				if(rowIndex != selectedRow) {
+					lines.add(line + "\n");
+				}else {
+					lines.add(name + "," + course + "," + section + "\n");
+				}
+				rowIndex++;
+			}
+			try(BufferedWriter bw = new BufferedWriter(new FileWriter("Information.txt"))){
+				for(String rowData : lines) {
+					bw.write(rowData);
+				}
+			}
+
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		model.setValueAt(name, selectedRow, 0);
+		model.setValueAt(course, selectedRow, 1);
+		model.setValueAt(section, selectedRow, 2);
+		JOptionPane.showMessageDialog(null,"Row Update Successful");
+
+	}
+	public void delete() {
+		int selectedRow = table.getSelectedRow();
+		if(selectedRow == -1) {
+			JOptionPane.showMessageDialog(null,"Please Select A Row To Delete");
+			return;
+		}
+		int select = (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete","Confirmation",
+				JOptionPane.YES_NO_OPTION));
+		if(select != JOptionPane.YES_OPTION) {
+			return;
+		}
+		ArrayList<String> lines = new ArrayList<>();
+
+		try(BufferedReader br = new BufferedReader(new FileReader("Information.txt"))){
+			String line = "";
+			int rowIndex = 0;
+			while((line = br.readLine())!= null) {
+				if(rowIndex != selectedRow) {
+					lines.add(line + "\n");
+				}
+				rowIndex++;
+			}
+			try(BufferedWriter bw = new BufferedWriter(new FileWriter("Information.txt"))){
+				for(String rowData : lines) {
+					bw.write(rowData);
+				}
+			}
+
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		model.removeRow(selectedRow);
+		JOptionPane.showMessageDialog(null,"Row Delete Successful");
+	}
+	public void clear() {
+		txtName.setText("");
+		txtCourse.setText("");
+		txtSection.setText("");
+	}
+	public void load() {
+		File file = new File("Information.txt");
+		if(!file.exists() || file.length() == 0) {
+			return;
+		}
+		try(BufferedReader br = new BufferedReader(new FileReader(file))){
+			String line = " ";
+			while((line = br.readLine())!= null) {
+				model.addRow(line.split(","));
+			}
+
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	public static void main(String[] args) {
+		new ylananSIF();
+	}
+
+}
